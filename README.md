@@ -52,14 +52,7 @@ O projeto foi construído utilizando as melhores práticas de desenvolvimento do
 | **Backend** | *Adicione a sua stack aqui (ex: Node.js / PHP)* | Arquitetura robusta para regras de negócio e API. |
 | **Banco de Dados** | *Adicione a sua stack aqui (ex: MySQL / PostgreSQL)* | Modelagem relacional para consistência dos dados. |
 
----
 
-## 📸 Demonstração
-
-<div align="center">
-  <p><i>Adicione aqui screenshots ou um GIF dinâmico do seu sistema em funcionamento</i></p>
-  <img src="https://via.placeholder.com/800x450?text=Dashboard+do+Sistema+de+Biblioteca" alt="Preview do Sistema" width="100%">
-</div>
 
 ---
 
