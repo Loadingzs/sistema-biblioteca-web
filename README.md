@@ -1,46 +1,61 @@
-# 📚 Sistema de Biblioteca - Versão Refatorada
+# 🛠️ Sistema de Biblioteca — Núcleo refatorado
 
-Projeto refatorado do sistema desktop de biblioteca, preparado para ser reaproveitado em um sistema web.
+Refatoração do sistema de biblioteca para separar **domínio, regras de negócio e persistência**. O objetivo é reutilizar a lógica independentemente da interface.
 
-## 🎯 Objetivo
+Apesar do nome do repositório, esta versão não inclui servidor HTTP nem páginas web. O ponto de entrada é uma demonstração de integração executada no console.
 
-Separar as responsabilidades do código original, aplicando o princípio **SRP (Single Responsibility Principle)** do SOLID, para que as regras de negócio possam ser reutilizadas independentemente da interface gráfica.
+## Funcionalidades
 
-## 📁 Estrutura do Projeto
+- Cadastro, consulta, atualização e exclusão de livros e usuários.
+- Busca de livros por título, autor e ISBN.
+- Verificação de campos obrigatórios e duplicidade de ISBN, ignorando hífens e espaços na verificação de cadastro.
+- Validação de formato e duplicidade de e-mail.
+- Empréstimo com controle de disponibilidade e limite de três registros ativos ou atrasados por usuário.
+- Renovação e registro de devolução.
+- Cálculo de multa de **R$ 2,00 por dia de atraso** na devolução.
 
-BibliotecaWeb/
-├── biblioteca.domain/       # Entidades (Livro, Usuario, Emprestimo)
-├── biblioteca.service/      # Regras de negócio (validações, cálculos)
-├── biblioteca.repository/   # Acesso ao banco de dados (CRUD)
-├── biblioteca.infrastructure/ # Conexão com o banco
-└── main/                    # Testes integrados (Testes.java)
+## Arquitetura
 
-## 🛠️ Tecnologias
+```text
+src/
+├── biblioteca/
+│   ├── domain/           # Livro, Usuario e Emprestimo
+│   ├── dto/              # Estruturas de transferência
+│   ├── service/          # Validações e regras de negócio
+│   ├── repository/       # Operações SQL via JDBC
+│   └── infrasctructure/  # Conexão com o MySQL
+└── main/Testes.java      # Demonstração de integração
 
-- Java 17+
-- MySQL 8.0
-- JDBC
-- NetBeans IDE
+test/biblioteca/service/EmprestimoServiceTest.java
+```
 
-## ⚙️ Funcionalidades
+O nome `infrasctructure` acima reproduz a grafia atual do pacote no código.
 
-- Cadastro, consulta, atualização e exclusão de livros
-- Cadastro, consulta, atualização e exclusão de usuários
-- Controle de empréstimos (máximo 3 por usuário)
-- Renovação de empréstimos
-- Devolução com cálculo de multa (R$ 2,00 por dia de atraso)
-- Validação de ISBN (ignora hífens)
-- Validação de e-mail (formato e duplicidade)
+## Tecnologias e requisitos
 
-## 🚀 Como executar
+- **Java 24**, conforme `javac.source` e `javac.target` em `nbproject/project.properties`.
+- MySQL e MySQL Connector/J.
+- NetBeans; Apache Ant para compilação por terminal.
+- JUnit 4 e Hamcrest no classpath de testes para executar a suíte existente.
 
-### 1. Clone o repositório
+## Como executar
 
+### 1. Clonar e abrir
+
+```bash
 git clone https://github.com/Loadingzs/sistema-biblioteca-web.git
+cd sistema-biblioteca-web
+```
 
-### 2. Configure o banco de dados
+Abra o projeto no NetBeans e selecione um JDK compatível com Java 24.
 
-Crie um banco chamado sistema_biblioteca e execute o script abaixo:
+### 2. Preparar o banco
+
+Em uma base de desenvolvimento nova, execute:
+
+```sql
+CREATE DATABASE IF NOT EXISTS sistema_biblioteca CHARACTER SET utf8mb4;
+USE sistema_biblioteca;
 
 CREATE TABLE livros (
     id INT PRIMARY KEY AUTO_INCREMENT,
@@ -70,47 +85,52 @@ CREATE TABLE emprestimos (
     FOREIGN KEY (id_livro) REFERENCES livros(id),
     FOREIGN KEY (id_usuario) REFERENCES usuarios(id)
 );
+```
 
-### 3. Configure a conexão
+### 3. Configurar o acesso
 
-Edite o arquivo biblioteca/infrastructure/ConnectionFactory.java com seus dados:
+Em `src/biblioteca/infrasctructure/ConnectionFactory.java`, ajuste `URL`, `USER` e `PASSWORD`.
 
-private static final String URL = "jdbc:mysql://localhost:3306/sistema_biblioteca";
-private static final String USER = "root";
-private static final String PASSWORD = "sua_senha";
+Resolva também a referência ao MySQL Connector/J nas propriedades do projeto: o caminho salvo em `nbproject/project.properties` depende da máquina de desenvolvimento original.
 
-### 4. Execute os testes
+### 4. Executar a demonstração
 
-No NetBeans, execute a classe main/Testes.java.
+Execute `main.Testes` pelo NetBeans. Essa classe **cria e altera registros no banco**, incluindo livros, usuários e empréstimos de exemplo. Utilize uma base de desenvolvimento; o resultado das execuções seguintes pode mudar por causa dos registros já existentes.
 
-Saída esperada:
+Para compilar com Ant, depois de resolver as dependências:
 
-✅ Conexão estabelecida com sucesso!
-✅ Livros cadastrados: 5
-✅ Usuários cadastrados: 4
-✅ Empréstimos realizados
-✅ Devolução registrada
-✅ BUILD SUCCESSFUL
+```bash
+ant clean jar
+```
 
-## 📊 O que foi refatorado
+## Testes
 
-| Problema original | Solução aplicada |
-|-------------------|------------------|
-| Classes duplicadas (model e modelo) | Unificadas em domain |
-| IDs como String em alguns lugares | Padronizados para int |
-| Validação de ISBN com LIKE (falha) | Normalização (remove hífens) + busca exata |
-| Regras de negócio nas telas Swing | Movidas para service |
-| Status "DEVOLVIDO" incompatível | Alterado para "FINALIZADO" |
+`test/biblioteca/service/EmprestimoServiceTest.java` contém três testes JUnit 4 para multa:
 
-## 🔗 Links
+| Cenário | Valor esperado |
+| --- | --- |
+| Devolução no prazo | R$ 0,00 |
+| Atraso de três dias | R$ 6,00 |
+| Atraso de dez dias | R$ 20,00 |
 
-- Versão refatorada (web-ready): https://github.com/Loadingzs/sistema-biblioteca-web
-- Versão original (desktop): https://github.com/Loadingzs/sistema-biblioteca
+Adicione JUnit 4 e Hamcrest às bibliotecas de testes no NetBeans e execute a classe de teste. As referências ainda não estão declaradas no classpath versionado. Esses testes de cálculo são diferentes da demonstração `main.Testes`, que acessa o MySQL.
 
-## 📝 Licença
+## Relação com os outros projetos
 
-MIT License - Copyright (c) 2026 Maykon
+| Etapa | Repositório |
+| --- | --- |
+| Interface desktop original | [sistema-biblioteca](https://github.com/Loadingzs/sistema-biblioteca) |
+| Núcleo refatorado | Este repositório |
+| API com Spring Boot | [biblioteca-api](https://github.com/Loadingzs/biblioteca-api) |
 
----
+## Próximos passos
 
-Desenvolvido como parte do Projeto Integrador - SENAC
+Padronizar dependências, ampliar os testes de validação, adicionar transações às operações de empréstimo e externalizar as credenciais de conexão.
+
+## Licença
+
+O README original declara licença MIT; o arquivo `LICENSE` ainda não está incluído no repositório.
+
+## Autor
+
+**Maykon Dias** · [GitHub](https://github.com/Loadingzs) · [LinkedIn](https://www.linkedin.com/in/maykondias/)
