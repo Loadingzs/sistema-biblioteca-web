@@ -115,6 +115,10 @@ ant clean jar
 
 Adicione JUnit 4 e Hamcrest às bibliotecas de testes no NetBeans e execute a classe de teste. As referências ainda não estão declaradas no classpath versionado. Esses testes de cálculo são diferentes da demonstração `main.Testes`, que acessa o MySQL.
 
+`RegistrarDevolucaoTest.java` acrescenta três testes do fluxo de devolução: multa informada após
+registrar a data real, devolução antecipada sem multa e falha de persistência sem anunciar sucesso
+ou liberar o livro. Esses testes usam repositórios falsos em memória e não conectam ao MySQL.
+
 ## Relação com os outros projetos
 
 | Etapa | Repositório |
