@@ -17,9 +17,14 @@ public class EmprestimoService {
     private UsuarioRepository usuarioRepository;
     
     public EmprestimoService() {
-        this.emprestimoRepository = new EmprestimoRepository();
-        this.livroRepository = new LivroRepository();
-        this.usuarioRepository = new UsuarioRepository();
+        this(new EmprestimoRepository(), new LivroRepository(), new UsuarioRepository());
+    }
+
+    EmprestimoService(EmprestimoRepository emprestimoRepository, LivroRepository livroRepository,
+            UsuarioRepository usuarioRepository) {
+        this.emprestimoRepository = emprestimoRepository;
+        this.livroRepository = livroRepository;
+        this.usuarioRepository = usuarioRepository;
     }
     
     // ==================== REGRAS DE NEGÓCIO ====================
@@ -165,10 +170,10 @@ public class EmprestimoService {
         }
 
         LocalDate dataDevolucaoReal = LocalDate.now();
-        double multa = calcularMulta(emprestimo);
 
         // Atualizar empréstimo
         emprestimo.setDataDevolucaoReal(dataDevolucaoReal);
+        double multa = calcularMulta(emprestimo);
         emprestimo.setStatus("FINALIZADO");  // ← Mudei de "DEVOLVIDO" para "FINALIZADO"
 
         boolean sucesso = emprestimoRepository.atualizar(emprestimo);
